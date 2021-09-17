@@ -1,21 +1,30 @@
 import { useState, useEffect } from 'react'
 import User from './User'
 import { IUser } from './interface'
+import { fetchUser } from './userSlice'
+import { useAppDispatch, useAppSelector } from '../../app/hooks'
+import { useGetAllUserWithLimitQuery } from './userApiSlice'
 
 export default function UserList() {
   const [users, setUsers] = useState<IUser[]>([])
   const [limit, setLimit] = useState(5)
   const [isLoading, setLoading] = useState(false)
 
-  useEffect(() => {
-    fetch(`https://randomuser.me/api/?results=${limit}`)
-      .then((res) => res.json())
-      .then((data) => setUsers(data.results))
-      .finally(() => setLoading(false))
+  const user = useAppSelector((state) => state.user)
 
-    return function () {
-      console.log('Cleanup function')
-    }
+  const { data } = useGetAllUserWithLimitQuery(limit)
+
+  const dispatch = useAppDispatch()
+
+  useEffect(() => {
+    dispatch(fetchUser(limit))
+    // fetch(`https://randomuser.me/api/?results=${limit}`)
+    //   .then((res) => res.json())
+    //   .then((data) => setUsers(data.results))
+    //   .finally(() => setLoading(false))
+    // return function () {
+    //   console.log('Cleanup function')
+    // }
   }, [limit])
 
   function addLimit() {
@@ -34,9 +43,15 @@ export default function UserList() {
         </button>
       </div>
       <ul className="list-none divide-y divide-gray-200">
-        {users.map((user) => (
+        {/* {user.data.map((user) => (
           <User key={user.login.uuid} user={user} />
-        ))}
+        ))} */}
+
+        {/* {data?.results.map((user) => (
+          <User key={user.login.uuid} user={user} />
+        ))} */}
+
+        {data && data.map((user) => <User key={user.login.uuid} user={user} />)}
       </ul>
     </div>
   )
